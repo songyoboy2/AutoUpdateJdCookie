@@ -1,0 +1,45 @@
+name: Private Image Build
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-amd64:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build amd64
+        run: |
+          docker build --no-cache -t aujc:amd64 .
+      - name: Save image as tar
+        run: |
+          docker save -o aujc-amd64.tar aujc:amd64
+      - name: Upload Docker image
+        uses: actions/upload-artifact@v4
+        with:
+          name: aujc-amd64-image
+          path: aujc-amd64.tar
+          retention-days: 7  # 延长保留时间
+
+  build-arm64:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build arm64
+        run: |
+          docker build --no-cache -t aujc:arm64 .
+      - name: Save image as tar
+        run: |
+          docker save -o aujc-arm64.tar aujc:arm64
+      - name: Upload Docker image
+        uses: actions/upload-artifact@v4
+        with:
+          name: aujc-arm64-image
+          path: aujc-arm64.tar
+          retention-days: 7
